@@ -13,7 +13,8 @@ Role Variables
 
 ```bash
 
-docker_smokeping_storage: /docker/containers/
+docker_storage_path: "/docker/containers"
+docker_semaphore_storage: /docker/containers/
 
 # Default Enviornmental Variables
 docker_semaphore_db_user: semaphore
@@ -39,10 +40,14 @@ docker_semaphore_ldap_search_filter: "(\u0026(uid=%s)(memberOf=cn=ipausers,cn=gr
 
 ```
 
+The secret variables should be put into a vault.  That is up to the user
+
 Dependencies
 ------------
 
 Nothing so far
+
+docker-swag
 
 Example Playbook
 ----------------
@@ -54,8 +59,12 @@ Including an example of how to use your role (for instance, with variables passe
 - hosts: watching
   roles:
       - role: findarato.docker-semaphore
+        vars:
+          docker_semaphore_storage: /docker/containers
+          docker_semaphore_network: theways
         tags: [ semaphore ]
-
+      - role: docker-swag
+        tags: [ setup, proxy ]
 ```
 
 License

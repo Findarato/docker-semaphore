@@ -1,7 +1,17 @@
 ---
 # defaults file for docker-semaphore
 
-docker_smokeping_storage: /docker/containers/
+# General Docker variables
+docker_log_driver: "json-file"
+docker_log_options:
+  max-file: "3"   # number of files or file count
+  max-size: "10m" # file size
+
+docker_storage_path: "/docker/containers"
+docker_semaphore_storage: "{{docker_storage_path}/semaphore"
+docker_semaphore_network: theways
+docker_proxy_storage: "/docker/containers/proxy/le/config/nginx/proxy-confs"
+
 
 # Default Enviornmental Variables
 docker_semaphore_db_user: semaphore
@@ -24,3 +34,5 @@ docker_semaphore_ldap_dn_bind: 'uid=bind_user,cn=users,cn=accounts,dc=local,dc=s
 docker_semaphore_ldap_password: 'ldap_bind_account_password'
 docker_semaphore_ldap_dn_search: 'dc=local,dc=example,dc=com'
 docker_semaphore_ldap_search_filter: "(\u0026(uid=%s)(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=local,dc=example,dc=com))"
+
+
