@@ -1,38 +1,60 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+docker-semaphore
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Just basic docker support and have it installed
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```bash
+
+docker_smokeping_storage: /docker/containers/
+
+# Default Enviornmental Variables
+docker_semaphore_db_user: semaphore
+docker_semaphore_db_pass: semaphore
+docker_semaphore_db_host: mysql # for postgres, change to: postgres
+docker_semaphore_db_port: 3306 # change to 5432 for postgres
+docker_semaphore_db_dialect: mysql # for postgres, change to: postgres
+docker_semaphore_db: semaphore
+docker_semaphore_playbook_path: /tmp/semaphore/
+docker_semaphore_admin_password: changeme
+docker_semaphore_admin_name: admin
+docker_semaphore_admin_email: admin@localhost
+docker_semaphore_admin: admin
+docker_semaphore_access_key_encryption: gs72mPntFATGJs9qK0pQ0rKtfidlexiMjYCH9gWKhTU=
+docker_semaphore_ldap_activated: 'no' # if you wish to use ldap, set to: 'yes' 
+docker_semaphore_ldap_host: dc01.local.example.com
+docker_semaphore_ldap_port: '636'
+docker_semaphore_ldap_needtls: 'yes'
+docker_semaphore_ldap_dn_bind: 'uid=bind_user,cn=users,cn=accounts,dc=local,dc=shiftsystems,dc=net'
+docker_semaphore_ldap_password: 'ldap_bind_account_password'
+docker_semaphore_ldap_dn_search: 'dc=local,dc=example,dc=com'
+docker_semaphore_ldap_search_filter: "(\u0026(uid=%s)(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=local,dc=example,dc=com))"
+
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Nothing so far
 
 Example Playbook
 ----------------
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+- hosts: watching
+  roles:
+      - role: findarato.docker-semaphore
+        tags: [ semaphore ]
 
 License
 -------
 
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+GPL-3

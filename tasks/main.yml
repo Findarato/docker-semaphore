@@ -1,2 +1,84 @@
 ---
 # tasks file for docker-semaphore
+- name: Install Python tools for docker
+  pip:
+    name: docker
+    state: latest
+
+- name: Grow the Ways
+  community.docker.docker_network:
+    name: theways
+
+- name: Create Docker paths
+  file:
+    path: "{{ docker_semaphore_storage }}/{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "1000"
+    group: "1000"
+    recurse: yes
+  with_items:
+    - config
+    - data
+  tags:
+    - semaphore
+
+- name: Download SWAG Config
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/linuxserver/reverse-proxy-confs/master/smokeping.subdomain.conf.sample
+    dest: "{{ docker_proxy_config_storage }}/smokeping.subdomain.conf"
+    mode: '0440'
+  notify:
+    - Restart SWAG
+  tags:
+    - semaphore
+    - SWAG
+
+
+- name: Recreate semaphore container
+  community.general.docker_container :
+    name: semaphore
+    image: semaphoreui/semaphore:latest
+    state: started
+    restart_policy: always
+    recreate: yes
+    restart: yes
+    pull: true
+    hostname: semaphore
+    exposed_ports:
+      - '3000'
+    volumes:
+      - "{{ docker_semaphore_storage }}/config:/config"
+      - "{{ docker_semaphore_storage }}/data:/data"
+      - /etc/localtime:/etc/localtime:ro
+    networks_cli_compatible: false
+    networks:
+      - name: theways
+    dns_search_domains: "{{ smokeping_dns_domains }}"
+    dns_servers: "{{ smokeping_dns_servers }}"
+    env:
+      PGID: "1000"
+      PUID: "1000"
+      TZ: "America/Chicago"
+      SEMAPHORE_DB_USER: "{{ docker_semaphore_db_user }}"
+      SEMAPHORE_DB_PASS: "{{ docker_semaphore_db_pass }}"
+      SEMAPHORE_DB_HOST: "{{ docker_semaphore_db_host }} # for postgres, change to: postgres"
+      SEMAPHORE_DB_PORT: "{{ docker_semaphore_db_port }} # change to 5432 for postgres"
+      SEMAPHORE_DB_DIALECT: "{{ docker_semaphore_db_dialect }} # for postgres, change to: postgres"
+      SEMAPHORE_DB: "{{ docker_semaphore_db }}"
+      SEMAPHORE_PLAYBOOK_PATH: "{{ docker_semaphore_playbook_path }}"
+      SEMAPHORE_ADMIN_PASSWORD: "{{ docker_semaphore_admin_password }}"
+      SEMAPHORE_ADMIN_NAME: "{{ docker_semaphore_admin_name }}"
+      SEMAPHORE_ADMIN_EMAIL: "{{ docker_semaphore_admin_email }}"
+      SEMAPHORE_ADMIN: "{{ docker_semaphore_admin }}"
+      SEMAPHORE_ACCESS_KEY_ENCRYPTION: "{{ docker_semaphore_access_key_encryption }}"
+      SEMAPHORE_LDAP_ACTIVATED: "{{ docker_semaphore_ldap_activated }} # if you wish to use ldap, set to: 'yes' "
+      SEMAPHORE_LDAP_HOST: "{{ docker_semaphore_ldap_host }}"
+      SEMAPHORE_LDAP_PORT: "{{ docker_semaphore_ldap_port }}"
+      SEMAPHORE_LDAP_NEEDTLS: "{{ docker_semaphore_ldap_needtls }}"
+      SEMAPHORE_LDAP_DN_BIND: "{{ docker_semaphore_ldap_dn_bind }}"
+      SEMAPHORE_LDAP_PASSWORD: "{{ docker_semaphore_ldap_password }}"
+      SEMAPHORE_LDAP_DN_SEARCH: "{{ docker_semaphore_ldap_dn_search }}"
+      SEMAPHORE_LDAP_SEARCH_FILTER: "{{ docker_semaphore_ldap_search_filter }}"
+  tags:
+    - semaphore
